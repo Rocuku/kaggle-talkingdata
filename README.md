@@ -1,2 +1,4 @@
-# kaggle-talkingdata
-TalkingData AdTracking Fraud Detection Challenge
+# Simple Pipeline of TalkingData Challenge
+
+[TalkingData AdTracking Fraud Detection Challenge](https://www.kaggle.com/c/talkingdata-adtracking-fraud-detection)
+
