@@ -15,7 +15,6 @@ def stacking_val(settings, logger):
     X_train, X_test, y_train, y_test = train_test_split(X_train, y_train, 
                                                         test_size=settings['test_size'], 
                                                         random_state=settings['seed'])
-
     settings['stacker'].fit(X_train, y_train)
     logger.print_log('train\'s auc: '+ str(roc_auc_score(y_train, settings['stacker'].predict_proba(X_train)[:,1])))
     logger.print_log('valid\'s auc: '+ str(roc_auc_score(y_test, settings['stacker'].predict_proba(X_test)[:,1])))
@@ -24,7 +23,6 @@ def stacking_fit(settings, logger):
     X_train = settings['X_train']
     y_train = settings['y_train']
     logger.print_log(str(settings['cvdata'].corr()))
-
     settings['stacker'].fit(X_train, y_train)
     try:
         logger.print_log(settings['stacker'].coef_)
@@ -51,9 +49,8 @@ def stacking_predict(settings, logger):
             df = df.merge(subs[m], on='click_id')  # being careful in case clicks are in different order
 
             X_test = np.array( df.drop(['click_id'],axis=1).clip(settings['almost_zero'],settings['almost_one']).apply(logit) )
-    final_sub['is_attributed'] = settings['stacker'].predict_proba(X_test)[:,1]
-    final_sub.head(10)
     
+    final_sub['is_attributed'] = settings['stacker'].predict_proba(X_test)[:,1]    
     output_file = '../output/' + settings['title'] + settings['subtitle'] + '.csv.gz'
     logger.print_log("writing to file <" + output_file + ">...")
     final_sub.to_csv(output_file, index=False, float_format='%.9f', compression='gzip')

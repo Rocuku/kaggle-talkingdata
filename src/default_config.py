@@ -56,12 +56,6 @@ dtypes = {
     'epochtime'                : 'int64',
     'nextClick'                : 'int64',
     'nextClick_shift'          : 'float64',
-    
-#    'ip_app_device_os_channel_nextClick' : 'uint32',
-#    'ip_os_device_nextClick' : 'uint32',
-#    'ip_os_device_app_nextClick' : 'uint32',
-#    'ip_channel_prevClick' : 'uint32',
-#    'ip_os_prevClick' : 'uint32',
 }
 
 

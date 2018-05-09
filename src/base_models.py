@@ -4,7 +4,6 @@ from scipy import interp
 import matplotlib.pyplot as plt
 from itertools import cycle
 
-
 import pandas as pd
 import time
 import numpy as np
@@ -56,10 +55,10 @@ def lightgbm_model(train_df, val_df, predictors, target, categorical, params, lo
                           feature_name=predictors,
                           categorical_feature=categorical
                           )
-    evals_results = {}
-    
     if logger:
         logger.print_log("training...")
+
+    evals_results = {}
     bst = lgb.train(lgb_params, 
                      xgtrain, 
                      valid_sets=[xgvalid], 
@@ -76,13 +75,9 @@ def lightgbm_model(train_df, val_df, predictors, target, categorical, params, lo
         logger.print_log("Model Report")
         logger.print_log("n_estimators : %d" % n_estimators)
         logger.print_log("auc: %f" % evals_results['valid']['auc'][n_estimators-1])
-    
-    
+
     lgb.plot_importance(bst)
     plt.gcf().savefig('../models/' + str(name) + '_feature_importance.png')
-    
-    predictions = bst.predict(val_df[predictors], num_iteration=bst.best_iteration)
-    return predictions
 
 def lgb_predict(logger, model_file, test_file, output_file, predictors):
     logger.print_log('loading test data...')
@@ -110,7 +105,6 @@ def lgb_predict_test(logger, model_file, test_df, output_file, predictors):
     logger.print_log("writing to file <" + output_file + ">...")
     sub.to_csv(output_file, index=False, compression='gzip')
     logger.print_log("done.")
-
     
 def lgb_cv_predict(logger, model_files, test_file, output_file, predictors):
     logger.print_log('loading test data...')
@@ -137,14 +131,10 @@ def xgboost_model(train_df, val_df, predictors, target, categorical, params, log
     gc.collect()
     logger.print_log("training...")
     bst = xgb.train(params, dtrain, 1000, [(dvalid, 'valid')], maximize=True, early_stopping_rounds = 30, verbose_eval=10)
-
     bst.save_model('../models/' + str(name) + '.txt')
-    
     xgb.plot_importance(bst)
     plt.gcf().savefig('../models/' + str(name) + '_feature_importance.png')
-    
     n_estimators = bst.best_iteration
-
     with open('../models/' + str(name) + '_best_it.txt', 'w+') as f:  
         f.write(str(n_estimators))
     
@@ -152,10 +142,6 @@ def xgboost_model(train_df, val_df, predictors, target, categorical, params, log
         logger.print_log("Model Report")
         logger.print_log("n_estimators : %d" % n_estimators)
         logger.print_log("auc : %f" % bst.best_score)
-    
-#    dtest = xgb.DMatrix(val_df[predictors])
-#    predictions = bst.predict(dtest, ntree_limit=n_estimators + 1)
-#    return predictions
 
 def xgb_predict(logger, model_file, test_file, output_file, predictors):
     logger.print_log('loading test data...')

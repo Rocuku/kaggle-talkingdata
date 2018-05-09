@@ -1,18 +1,20 @@
-import matplotlib.pyplot as plt
-from itertools import cycle
-from sklearn.cross_validation import train_test_split
-from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import roc_auc_score, roc_curve, auc
-from sklearn.model_selection import GridSearchCV
 import lightgbm as lgb
 import xgboost as xgb
 from scipy import interp
 import pandas as pd
-import time
 import numpy as np
+import time
 import gc
-
 import sys
+
+import matplotlib.pyplot as plt
+from itertools import cycle
+
+from sklearn.cross_validation import train_test_split
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_auc_score, roc_curve, auc
+from sklearn.model_selection import GridSearchCV
+
 import wordbatch
 from wordbatch.extractors import WordHash
 from wordbatch.models import FM_FTRL
@@ -150,55 +152,3 @@ def kfold_fm_ftrl_train_predict(model_files, k, train, predictors, target, logge
     logger.print_log("done.")
 
     
-def kfold_plot(train, predictors, target, model, k):
-    kf = StratifiedKFold(n_splits=k)
-    scores = []
-    mean_tpr = 0.0
-    mean_fpr = np.linspace(0, 1, 100)
-    exe_time = []
-    
-    colors = cycle(['cyan', 'indigo', 'seagreen', 'yellow', 'blue'])
-    lw = 2
-    
-    xtrain = train[predictors]
-    ytrain = train[target]
-        
-    i=0
-    for (train_index, test_index), color in zip(kf.split(xtrain, ytrain), colors):
-        X_train, X_test = xtrain.iloc[train_index], xtrain.iloc[test_index]
-        y_train, y_test = ytrain.iloc[train_index], ytrain.iloc[test_index]
-        
-        begin_t = time.time()
-        predictions = model(train.iloc[train_index], train.iloc[test_index], predictors, target, i)
-        end_t = time.time()
-        exe_time.append(round(end_t-begin_t, 3))
-
-        score = roc_auc_score(y_test.astype(float), predictions)
-        scores.append(score)
-        print_log('cv_%d scores: %f' % (i, score)) 
-
-        fpr, tpr, thresholds = roc_curve(y_test, predictions)
-        mean_tpr += interp(mean_fpr, fpr, tpr)
-        mean_tpr[0] = 0.0
-        roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, lw=lw, color=color, label='ROC fold %d (area = %0.2f)' % (i, roc_auc))
-        i += 1
-    plt.plot([0, 1], [0, 1], linestyle='--', lw=lw, color='k', label='Luck')
-    
-    mean_tpr /= kf.get_n_splits(train, ytrain)
-    mean_tpr[-1] = 1.0
-    mean_auc = auc(mean_fpr, mean_tpr)
-    plt.plot(mean_fpr, mean_tpr, color='g', linestyle='--', label='Mean ROC (area = %0.2f)' % mean_auc, lw=lw)
-    
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic')
-    plt.legend(loc='lower right')
-    plt.show()
-    
-    print_log('mean scores: %f' % np.mean(scores)) 
-    print_log('mean model process time: %f s' % np.mean(exe_time))
-    
-    return scores, np.mean(scores), np.mean(exe_time)
